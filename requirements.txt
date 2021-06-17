@@ -1,0 +1,4 @@
+emoji==1.2.0
+pandas==1.0.5
+gensim==3.8.3
+streamlit==0.82.0
