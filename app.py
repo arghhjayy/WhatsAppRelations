@@ -64,10 +64,10 @@ def clean_lines(lines):
 st.set_page_config(page_title='WhatsApp Relations!')
 
 st.title('WhatsApp relations 👫')
-st.write('What\'s hidden in your WhatsApp chats? 🤔')
+st.write('What is hidden in your WhatsApp chats? 🤔')
 
 @st.cache(suppress_st_warning=True, allow_output_mutation=True, show_spinner=False)
-def prepare_model(data, n_iters):
+def prepare_model(data, n_iters, save_wv):
 	lines = data.read().decode('utf-8')
 
 	lines = lines.split('\n')
@@ -80,23 +80,45 @@ def prepare_model(data, n_iters):
 	                 size=50, window=10, 
 	                 min_count=30, iter=n_iters)
 
+	if save_wv:
+		model.save('saved_model.model')
+
 	return model
 
-data = st.file_uploader('Upload your WhatsApp chat file', type=['txt'])
+data = st.file_uploader('Upload your WhatsApp exported chat file', type=['txt'])
 
 if data is not None:
-	n_iters = st.slider('Number of iterations', 50, 1000, value=100)
+	n_iters = st.slider('Number of iterations', 50, 10000, value=100)
 
-	with st.spinner(f'Building your model, please wait...'):
-		model = prepare_model(data, n_iters)
+	save_wv = st.checkbox('Save word vectors?')
+
+	with st.spinner(f'Analyzing your data, please wait...'):
+		model = prepare_model(data, n_iters, save_wv)
 	st.success('Finished building model!')
 
-	word = st.text_input("Enter word here")
+	st.title('Word similarity:')
+
+	word = st.text_input('Enter word here')
 	try:
 		res = model.most_similar(word, topn=5)
 		st.write(f'5 most similar words to {word}:')
-		st.write(pd.DataFrame(res, columns=['word', 'similarity score']))
+		res = pd.DataFrame(res, columns=['word', 'similarity score'])
+		st.write(res)
 	except:
 		st.write('Word is either not entered or does not exist in dictionary')
+
+	st.title('Word analogies:')
+
+	word1 = st.text_input('Word 1')
+	word2 = st.text_input('Word 2')
+	word3 = st.text_input('Word 3')
+
+	try:
+		res = model.wv.most_similar(positive=[word3, word2], negative=[word1])
+		res = pd.DataFrame(res, columns=['word', 'similarity score'])
+		st.write(f'{word1} : {word2} :: {word3} : ?')
+		st.write(res)
+	except:
+		st.write('At least one of the three word above does not exist in the dictionary')
 else:
 	pass
