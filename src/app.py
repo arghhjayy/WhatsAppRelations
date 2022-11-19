@@ -88,6 +88,11 @@ def load_saved_model():
 		return None
 
 
+@app.route("/health", methods=["GET"])
+def health_check():
+	return jsonify("Healthy")
+
+
 @app.route("/make_embeddings", methods=["POST"])
 def make_model():
 	data_file = request.files["data_file"]
@@ -103,7 +108,7 @@ def top_n_similar():
 	if model is None:
 		return jsonify("Model loading failed")
 
-	print(model.wv.index_to_key)
+	# print(model.wv.index_to_key)
 
 	req_data = request.get_json()
 	word = req_data['word']
@@ -135,4 +140,4 @@ def word_analogies():
 		return jsonify('At least one of the three word above does not exist in the dictionary')
 
 if __name__ == "__main__":
-	app.run(debug=True)
+	app.run(debug=True, host="0.0.0.0")
