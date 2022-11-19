@@ -14,6 +14,6 @@ RUN pip3 install -r /app/requirements.txt
 
 WORKDIR /app/src/
 
-CMD ["python3", "app.py"]
+CMD ["gunicorn", "--worker-connections=3", "--bind=0.0.0.0:5000", "app:app"]
 
 EXPOSE 5000
